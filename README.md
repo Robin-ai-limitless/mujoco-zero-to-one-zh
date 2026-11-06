@@ -1,12 +1,12 @@
 # 从零开始使用 MuJoCo：Windows 中文教程
 
-面向没有编程基础的朋友。按顺序完成：准备文件夹 → 安装 Python → 安装 MuJoCo → 小球落地 → 电机摆杆 → 保存数据 → 下次重新运行。
+面向零基础使用者的开源入门教程。按顺序完成：准备文件夹 → 安装 Python → 安装 MuJoCo → 小球落地 → 电机摆杆 → 保存数据 → 下次重新运行。
 
 **Python、虚拟环境、下载缓存、安装临时目录、模型和实验结果全部放在非 C 盘。** 默认 D 盘；没有 D 盘就用 E 盘。不要为了教程格式化或重新分区。
 
 本教程适用于 Windows 10/11、Intel/AMD 64 位电脑。Mac、Linux 和 Windows ARM 电脑不要直接照抄。本教程使用 Miniconda 提供 Conda，不需要完整 Anaconda 套装、CUDA、独立显卡、Git 或 VS Code。需要能访问 GitHub、Anaconda 官方下载与软件源、PyPI 的网络。
 
-基础配置与老师现有 go2piper / ml_hw 环境对齐：**Conda + Python 3.10.20 + MuJoCo 3.13.0 + NumPy 2.2.6**。固定的是这三个运行时版本；Conda 管理工具本身和其他间接依赖不承诺完全相同。机器人模型、PyTorch、CUDA 和训练配置不属于本教程的基础环境。
+本教程使用以下基础配置：**Conda + Python 3.10.20 + MuJoCo 3.13.0 + NumPy 2.2.6**。固定的是这三个运行时版本；Conda 管理工具本身和其他间接依赖不承诺完全相同。机器人模型、PyTorch、CUDA 和训练配置不属于本教程的基础环境。
 
 说明：我们控制的是开发环境及其缓存位置，不能保证 Windows、浏览器和驱动完全不向系统盘写入日志。本教程不改变整台电脑的系统临时目录。
 
@@ -43,38 +43,83 @@ XML 文件描述“世界长什么样”，Python 文件决定“世界怎么运
 | if 开头的几行 | 检查盘符与路径，填错就停下 |
 | New-Item | 创建必要文件夹 |
 | $Conda | 后续调用的 Conda 程序位置 |
-| $EnvDir、$Py | 教学环境目录和其中的 Python 程序位置 |
+| $EnvDir、$Py | 本教程的环境目录和其中的 Python 程序位置 |
 | $env:CONDA_ENVS_PATH | Conda 环境默认存放位置 |
 | $env:CONDA_PKGS_DIRS | Conda 下载及解压的软件包缓存位置 |
 | $env:PIP_CACHE_DIR | pip 下载缓存位置 |
 | $env:TEMP、$env:TMP | 当前终端及其启动程序的临时目录 |
 | Set-Location | 切换终端工作位置 |
 
-在 PowerShell 中粘贴下面整块代码，按回车。只修改第一行的盘符，随后在同一个窗口继续。
+下面分成 6 个小步骤。**按顺序在同一个 PowerShell 窗口执行，一次只复制一个代码框，按回车后再继续。** 如果出现红色报错，先停止，不要执行下一步。中途关闭窗口后，需要从 3.1 重新开始。
 
-使用 GitHub 代码框右上角的复制按钮。命令正常换行，行末不要额外添加反斜杠；路径中原有的反斜杠需要保留。正则检查冒号后是两个反斜杠，不要改成四个。
+使用 GitHub 代码框右上角的复制按钮。行末不要额外添加反斜杠，路径中原有的反斜杠需要保留。
+
+### 3.1 选择总目录
+
+只按实际情况修改第一行盘符。例如没有 D 盘而有 E 盘，就改成 E:\MuJoCoLab。第二行表示遇到错误时停止当前操作。
 
 ~~~powershell
 $Root = 'D:\MuJoCoLab'
 $ErrorActionPreference = 'Stop'
+Write-Host "Selected folder: $Root"
+~~~
+
+应显示 Selected folder: D:\MuJoCoLab（或所选盘符），表示已记住路径。
+
+### 3.2 检查路径
+
+这几行检查是否使用非 C 盘、英文无空格路径，以及盘符是否存在。第一行正则表达式中的冒号后有两个反斜杠，请保持原样。
+
+~~~powershell
 if ($Root -notmatch '^[D-Zd-z]:\\') { throw 'Choose an absolute path outside C:.' }
 if ($Root -match '\s|[^\x00-\x7F]') { throw 'Use an English path without spaces.' }
-if (-not (Test-Path ([IO.Path]::GetPathRoot($Root)))) { throw 'Drive does not exist. Change the first line.' }
+if (-not (Test-Path ([IO.Path]::GetPathRoot($Root)))) { throw 'Drive does not exist. Change step 3.1.' }
+Write-Host 'Path check passed.'
+~~~
+
+应显示 Path check passed.。出现红色报错时，回到 3.1 检查盘符及目录写法。
+
+### 3.3 创建并进入总目录
+
+~~~powershell
 New-Item -ItemType Directory -Force -Path $Root | Out-Null
 $Root = (Resolve-Path $Root).Path
 if ($Root -match '^[Cc]:') { throw 'C: is not allowed.' }
+Set-Location $Root
+Get-Location
+~~~
+
+最后应显示选定的 MuJoCoLab 目录。文件夹已经存在时会继续使用。
+
+### 3.4 记住程序和环境的位置
+
+这里仅设置路径变量，此时这些程序可能还没安装。正常情况下不会显示新文字，也不代表安装完成。
+
+~~~powershell
 $CondaHome = "$Root\miniconda3"
 $Conda = "$CondaHome\Scripts\conda.exe"
 $EnvDir = "$Root\envs\mujoco-basics"
 $Py = "$EnvDir\python.exe"
 $Project = "$Root\tutorial"
+~~~
+
+### 3.5 指定缓存与临时目录
+
+这一步让后续安装程序使用非 C 盘的环境、缓存和临时目录。正常情况下不会显示新文字。
+
+~~~powershell
 $env:CONDA_ENVS_PATH = "$Root\envs"
 $env:CONDA_PKGS_DIRS = "$Root\cache\conda"
 $env:PIP_CACHE_DIR = "$Root\cache\pip"
 $env:TEMP = "$Root\temp"
 $env:TMP = "$Root\temp"
-New-Item -ItemType Directory -Force -Path $env:TEMP,$env:CONDA_ENVS_PATH,$env:CONDA_PKGS_DIRS,$env:PIP_CACHE_DIR,"$Root\downloads" | Out-Null
-Set-Location $Root
+~~~
+
+### 3.6 创建所需子目录并确认结果
+
+~~~powershell
+New-Item -ItemType Directory -Force -Path $env:CONDA_ENVS_PATH,$env:CONDA_PKGS_DIRS | Out-Null
+New-Item -ItemType Directory -Force -Path $env:PIP_CACHE_DIR,$env:TEMP,"$Root\downloads" | Out-Null
 Write-Host "Environment root: $Root"
 Write-Host "Install Miniconda into: $CondaHome"
 ~~~
@@ -123,7 +168,7 @@ Test-Path "$Project\models\pendulum.xml"
 
 ## 5. 安装 Miniconda（只需一次）
 
-Conda 负责创建和管理环境；Miniconda 是带有 Conda 的精简安装包。安装包自带的 base Python 版本可以不同，第六节会单独创建 Python 3.10.20 的教学环境。
+Conda 负责创建和管理环境；Miniconda 是带有 Conda 的精简安装包。安装包自带的 base Python 版本可以不同，第六节会单独创建 Python 3.10.20 的本教程的环境。
 
 先下载官方 Windows x64 安装包，保存到刚才指定的非 C 盘目录：
 
@@ -160,7 +205,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Conda path check failed.' }
 
 成功标志：显示 Conda 版本；envs_dirs 和 pkgs_dirs 指向第三节指定的非 C 盘目录。不要另开窗口继续。
 
-## 6. 创建与老师相同版本的基础环境
+## 6. 创建固定版本的基础环境
 
 ### 6.1 安装 Python 3.10.20
 
@@ -171,7 +216,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Environment creation failed. Stop here.' }
 
 看到 Proceed ([y]/n)? 时，输入 y 并回车。这表示确认安装列出的软件包。
 
-首次使用 Anaconda 软件源时可能要求阅读并接受其服务条款。请根据终端提示阅读并自行决定；如果出现 TosNonInteractiveError，先按错误提示完成对应软件源的条款流程，再重试本节。不要跳过错误继续安装。如果提示找不到这个精确的 Python 版本，保留报错交给老师，不要自行换成其他版本。
+首次使用 Anaconda 软件源时可能要求阅读并接受其服务条款。请根据终端提示阅读并自行决定；如果出现 TosNonInteractiveError，先按错误提示完成对应软件源的条款流程，再重试本节。不要跳过错误继续安装。如果提示找不到这个精确的 Python 版本，保留完整报错并通过仓库 Issues 反馈，不要自行换成其他版本。
 
 ### 6.2 安装固定版本 MuJoCo 与 NumPy
 
@@ -199,7 +244,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Version check failed. Stop here.' }
 - Python path 和 Package 均在所选非 C 盘的 envs\mujoco-basics 下。
 - 最后显示 VERSION CHECK PASSED。
 
-这里只对齐基础运行时，不会把老师的机器人、训练模型或其他项目依赖自动复制过来。
+完成本节后即可运行后面的两个示例。机器人模型和强化学习训练依赖需要按相应项目的说明另行配置。
 
 ### 6.4 保存本机依赖记录
 
@@ -328,7 +373,7 @@ Get-Content "$Project\output\pendulum.csv" -TotalCount 10
 | 找不到 `run_demo.py` | 第四节检查必须全部为 True；通常多套了一层解压目录 |
 | `No module named mujoco` | 使用本教程完整的 Conda run 命令，不要直接用电脑上其他 Python；重做第六节安装包部分 |
 | 下载超时、连接失败 | 确认网络能访问报错中的域名，网络恢复后重试失败步骤；不要关闭证书验证 |
-| GitHub 下载失败 | 请老师直接分享教程 ZIP，并按第四节放置文件；Miniconda/Python 下载仍需要可用网络 |
+| GitHub 下载失败 | 可使用已获取的教程 ZIP，按第四节放置文件；Miniconda/Python 下载仍需要可用网络 |
 | GLFW、OpenGL、窗口黑屏 | 先跑 `--headless`。如果计算成功，优先检查显卡驱动、本地桌面与远程桌面的图形支持；从电脑或显卡厂商官方渠道更新驱动 |
 | DLL load failed | 保留完整报错，检查是否为 x64 Windows，并确认所用 Python 路径；不要从不明网站下载 DLL |
 | XML parse error | 检查刚改的引号、标签；从仓库重新复制对应 XML 恢复 |
@@ -336,7 +381,7 @@ Get-Content "$Project\output\pendulum.csv" -TotalCount 10
 | 终端一直不让输入 | 仿真还在运行；关闭窗口，或在终端按 Ctrl+C 停止 |
 | PowerShell 出现 `>>` | 通常是只粘贴了半段代码或缺少引号；Ctrl+C 取消后重新复制完整代码框 |
 
-仍有问题时，把**执行的命令、完整报错文字和下面检查结果**交给老师。无需提供密码或账号令牌。
+仍有问题时，可在本仓库的 Issues 中反馈，并附上**执行的命令、完整报错文字和下面检查结果**。发布前隐去个人信息，无需提供密码或账号令牌。
 
 ```powershell
 Write-Host "Root=$Root"
@@ -366,4 +411,4 @@ if (Test-Path $Py) { & $Conda run --no-capture-output -p $EnvDir python -c "impo
 
 本教程使用 Miniconda 的自定义安装目录、CONDA_ENVS_PATH、CONDA_PKGS_DIRS、pip 缓存及当前进程临时目录设置，将环境和主要缓存放到非 C 盘。更新日期：2026-11-06。
 
-已在老师现有 Windows Conda 环境中核对 Python 3.10.20、MuJoCo 3.13.0、NumPy 2.2.6，并运行两个示例各 3 秒的无窗口仿真，均正常完成并生成 CSV。尚未在全新电脑上完整重走 Miniconda 安装流程，也未验证图形窗口。基础版本相同不代表显卡驱动、Conda 管理工具版本及全部间接依赖完全相同。
+已在 Windows Conda 环境中核对 Python 3.10.20、MuJoCo 3.13.0、NumPy 2.2.6，并运行两个示例各 3 秒的无窗口仿真，均正常完成并生成 CSV。尚未在全新电脑上完整重走 Miniconda 安装流程，也未验证图形窗口。基础版本相同不代表显卡驱动、Conda 管理工具版本及全部间接依赖完全相同。
