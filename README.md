@@ -300,25 +300,72 @@ conda env list
 
 Python 路径必须位于所选非 C 盘的 envs\mujoco-basics 下；环境列表中当前环境旁有星号。如果仍然指向 base 或 C 盘，先停止，不要安装软件包。
 
-### 6.4 记住本环境的缓存和临时目录（只设置一次）
+### 6.4 保存路径并设置临时目录（首次配置）
 
-保持 (mujoco-basics) 激活，在创建环境的同一个 Prompt 窗口执行：
+在创建环境的同一个 Anaconda Prompt 中，只保存以下两个变量：
 
 ~~~bat
-conda env config vars set "MJROOT=%MJROOT%" "PIP_CACHE_DIR=%MJROOT%\cache\pip" "TEMP=%MJROOT%\temp" "TMP=%MJROOT%\temp"
+conda env config vars set -n mujoco-basics "MJROOT=%MJROOT%" "PIP_CACHE_DIR=%MJROOT%\cache\pip"
 ~~~
 
-这些变量会随这个环境保存。重新激活后生效：
+**执行成功后，直接关闭这个 Anaconda Prompt，重新打开一个新的窗口。不要在这个旧窗口中先执行 conda deactivate。** 新窗口中执行：
 
 ~~~bat
-conda deactivate
 conda activate mujoco-basics
 echo %MJROOT%
 echo %PIP_CACHE_DIR%
-echo %TEMP%
 ~~~
 
-三个路径都应在所选非 C 盘。下次激活会自动恢复，不用重复设置。
+两个路径都应在所选非 C 盘。然后为当前窗口设置临时目录：
+
+~~~bat
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
+~~~
+
+MJROOT 和 pip 缓存会在下次激活时自动恢复。TEMP、TMP 只在当前窗口设置，不保存到 Conda 环境配置；每次新开窗口后按第十节执行。
+
+#### 可选恢复：仅适用于旧命令执行后激活失败
+
+**仅当你执行过旧版包含 TEMP、TMP 的保存命令，并在随后重新激活时出现“找不到文件”或“找不到环境”的错误，才使用下面的恢复步骤。** 正常安装、正常激活，或仅显示覆盖变量的 WARNING 而没有激活失败时，请跳过整段恢复步骤，直接继续 6.5。
+
+旧命令把 TEMP、TMP 也存入了环境配置。下面清除的是本教程的旧设置，并恢复环境搜索路径，不需要重建环境。这是针对该旧流程的恢复方法，不代表所有“找不到文件/环境”错误都由同一原因造成；请保留完整错误文字。
+
+1. 关闭出现问题的窗口，重新打开 **Anaconda Prompt**，先保持在 base。
+2. 设置实际安装目录（如果用 E 盘，只修改第一行盘符），检查环境仍然存在：
+
+~~~bat
+set "MJROOT=D:\MuJoCoLab"
+dir "%MJROOT%\envs\mujoco-basics\conda-meta\history"
+~~~
+
+应该能列出 history 文件。如果提示找不到文件，先用 conda env list 查看实际环境位置；不要直接重建或删除环境。
+
+3. 确认上述文件存在后，逐条执行：
+
+~~~bat
+conda env config vars unset TEMP TMP -p "%MJROOT%\envs\mujoco-basics"
+conda config --prepend envs_dirs "%MJROOT%\envs"
+set "CONDA_ENVS_PATH=%MJROOT%\envs"
+~~~
+
+4. 按名字激活，再设置当前窗口的临时目录：
+
+~~~bat
+conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
+~~~
+
+5. 确认环境可以运行：
+
+~~~bat
+python -c "import sys,mujoco; print(sys.executable); print(mujoco.__version__)"
+~~~
+
+应显示非 C 盘的 mujoco-basics 环境路径和版本 3.13.0。如果仍然失败，请保留完整报错后通过 Issues 反馈。
 
 ### 6.5 在当前环境安装 MuJoCo 和 NumPy
 
@@ -347,6 +394,9 @@ python -c "import mujoco,numpy; print('MuJoCo:',mujoco.__version__); print('NumP
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 python -m pip install pillow
 ~~~
 
@@ -382,6 +432,9 @@ conda deactivate
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 cd /d "%MJROOT%\tutorial"
 dir run_demo.py
 dir models
@@ -481,10 +534,13 @@ notepad "%MJROOT%\tutorial\output\pendulum.csv"
 
 ## 10. 下次打开电脑怎么继续？
 
-只需打开 Anaconda Prompt，依次执行三条命令：
+打开 Anaconda Prompt，按顺序执行下面的命令：
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 cd /d "%MJROOT%\tutorial"
 python run_demo.py --model pendulum --seconds 20
 ~~~
@@ -543,6 +599,6 @@ python -c "import sys,platform; print(sys.executable); print(platform.platform()
 - [Conda Windows 安装说明](https://docs.conda.io/projects/conda/en/stable/user-guide/install/windows.html)
 - [Conda 环境和缓存目录配置](https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html)
 
-本教程先将 Miniconda 安装到非 C 盘，再在 Anaconda Prompt 中配置 envs_dirs、pkgs_dirs，创建名为 mujoco-basics 的独立环境。pip 缓存和临时目录随该环境保存，后续按名字激活使用。更新日期：2026-11-06。
+本教程先将 Miniconda 安装到非 C 盘，再在 Anaconda Prompt 中配置 envs_dirs、pkgs_dirs，创建名为 mujoco-basics 的独立环境。pip 缓存随环境保存，临时目录在每次打开的终端中单独设置。更新日期：2026-11-06。
 
 已在 Windows Conda 环境中核对 Python 3.10.20、MuJoCo 3.13.0、NumPy 2.2.6，并运行两个示例各 3 秒的无窗口仿真，均正常完成并生成 CSV。另已通过 cmd.exe 调用现有 Conda，按名字激活环境并运行两个无窗口示例。尚未在全新电脑上完整重走 Miniconda 安装和新建命名环境流程，也未验证图形窗口。基础版本相同不代表显卡驱动、Conda 管理工具版本及全部间接依赖完全相同。
