@@ -359,14 +359,6 @@ set "TEMP=%MJROOT%\temp"
 set "TMP=%MJROOT%\temp"
 ~~~
 
-5. Confirm the environment runs:
-
-~~~bat
-python -c "import sys,mujoco; print(sys.executable); print(mujoco.__version__)"
-~~~
-
-Expect the non-C: mujoco-basics Python path and version 3.13.0. If it still fails, keep the full error and report it in Issues.
-
 ### 6.5 Install MuJoCo and NumPy in the active environment
 
 Confirm that the prompt begins with (mujoco-basics), then run:
@@ -572,17 +564,7 @@ where python
 python -c "import sys,platform; print(sys.executable); print(platform.platform()); print(platform.machine())"
 ~~~
 
-## 12. Completion checklist and next steps
-
-- Environment paths point to a non-C: drive.
-- The MuJoCo graphical window opens and you can control the view.
-- You can watch the ball fall and change its initial height.
-- You can run the pendulum and compare motor amplitudes.
-- After closing the terminal, you can run again using section 10.
-
-Then explore multi-joint robots, sensors, PD control, Gymnasium interfaces, and reinforcement learning. Adding robot assets, training frameworks, and CUDA at the beginning makes troubleshooting harder.
-
-## Official references and validation
+## 12. Official references and validation
 
 - [MuJoCo Python documentation](https://mujoco.readthedocs.io/en/stable/python.html)
 - [MuJoCo XML reference](https://mujoco.readthedocs.io/en/stable/XMLreference.html)
