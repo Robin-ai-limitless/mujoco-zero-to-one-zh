@@ -442,21 +442,13 @@ dir models
 
 You should find run_demo.py and models. The /d option changes both drive and directory. MJROOT uses the location saved earlier, including your chosen drive.
 
-First test the physics without opening a window:
-
-~~~bat
-python run_demo.py --model ball --headless --seconds 3
-~~~
-
-Expected: Finished appears, and tutorial\output\ball.csv is created. Headless execution is fast because it does not deliberately wait for real time.
-
-Now open the simulation window:
+Run this command to open the MuJoCo simulation window directly:
 
 ~~~bat
 python run_demo.py --model ball --seconds 15
 ~~~
 
-An orange ball should fall and settle on the floor. The example ends after about 15 seconds of simulation, or you can close the window early. The fall is quick; rerun the command to watch again.
+**Success means a MuJoCo graphical window opens and you can see an orange ball fall and settle on the floor.** Terminal output or a CSV file alone does not complete this section. The example ends after about 15 seconds of simulation, or you can close the window early. The fall is quick; rerun the command to watch again.
 
 Drag with the left mouse button to rotate the view; use the scroll wheel to zoom. Close one example before starting another. While a window is running, the terminal may not show a new prompt.
 
@@ -528,7 +520,7 @@ Columns are simulation time in seconds, angle in radians, and motor input. In ba
 
 The settled ball-center height is approximately 0.1 meters because the ball has a radius. Small contact-solver deviations are normal.
 
-The graphical example attempts real-time pacing. A slow computer may take longer than 15 wall-clock seconds to simulate 15 seconds. Headless mode does not deliberately wait.
+The graphical example attempts real-time pacing. A slow computer may take longer than 15 wall-clock seconds to simulate 15 seconds.
 
 ## 10. Run again next time
 
@@ -563,7 +555,7 @@ Press Space to pause or resume. The standalone viewer does not execute the scrip
 | No module named mujoco | Activate mujoco-basics, inspect the Python path, then install as in 6.5 |
 | Download timeout or connection failure | Check access to the domain in the error; retry when connectivity returns; do not disable certificate verification |
 | GitHub download fails | Use an already obtained tutorial ZIP as in section 4; Miniconda/Python downloads still need working connectivity |
-| GLFW/OpenGL error or black window | Try --headless; if physics works, check graphics drivers and local/remote desktop graphics support; obtain drivers from official vendors |
+| GLFW/OpenGL error or black window | Keep the complete terminal error; check graphics drivers and local/remote desktop graphics support; obtain drivers from official vendors |
 | DLL load failed | Keep the full error; check x64 Windows and the selected Python path; do not download random DLL files |
 | XML parse error | Check edited quotes/tags or restore that XML file from the repository |
 | Ball has already landed | The fall is quick; rerun or increase the initial height |
@@ -583,7 +575,7 @@ python -c "import sys,platform; print(sys.executable); print(platform.platform()
 ## 12. Completion checklist and next steps
 
 - Environment paths point to a non-C: drive.
-- Headless simulation finishes and creates CSV files.
+- The MuJoCo graphical window opens and you can control the view.
 - You can watch the ball fall and change its initial height.
 - You can run the pendulum and compare motor amplitudes.
 - After closing the terminal, you can run again using section 10.
