@@ -300,25 +300,72 @@ conda env list
 
 Python must be under envs\mujoco-basics on your chosen non-C: drive. The active environment has an asterisk in the list. If Python still points to base or C:, stop before installing packages.
 
-### 6.4 Save this environment's cache and temporary settings once
+### 6.4 Save paths and set the temporary directory
 
-With (mujoco-basics) active, use the same Prompt window where you created the environment:
+In the Anaconda Prompt used to create the environment, save only these two variables:
 
 ~~~bat
-conda env config vars set "MJROOT=%MJROOT%" "PIP_CACHE_DIR=%MJROOT%\cache\pip" "TEMP=%MJROOT%\temp" "TMP=%MJROOT%\temp"
+conda env config vars set -n mujoco-basics "MJROOT=%MJROOT%" "PIP_CACHE_DIR=%MJROOT%\cache\pip"
 ~~~
 
-Reactivate to apply the saved variables:
+**After this succeeds, close this Anaconda Prompt and open a new one. Do not first run conda deactivate in the old window.** In the new window, run:
 
 ~~~bat
-conda deactivate
 conda activate mujoco-basics
 echo %MJROOT%
 echo %PIP_CACHE_DIR%
-echo %TEMP%
 ~~~
 
-All three paths should use your non-C: drive. Future activations restore these values automatically.
+Both paths should use the chosen non-C: drive. Now set temporary locations for the current window:
+
+~~~bat
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
+~~~
+
+MJROOT and the pip cache are restored on activation. TEMP and TMP are set only for the current window, not stored in Conda's environment configuration. Follow section 10 whenever you open a new window.
+
+#### Optional recovery: only for activation failures after the old command
+
+**Use the following recovery steps only if you ran the old command that saved TEMP and TMP and then encountered a file-not-found or environment-not-found error when reactivating.** If installation and activation work normally, or you only see an overwrite WARNING without activation failing, skip this entire recovery procedure and continue with 6.5.
+
+The old command also saved TEMP and TMP in the environment configuration. These steps remove those old settings and restore the environment search path without recreating the environment. This recovery procedure addresses the old tutorial workflow; it does not establish a common cause for every file-not-found or environment-not-found error. Keep the complete error text.
+
+1. Close the affected window and open a new **Anaconda Prompt**, initially in base.
+2. Set the actual installation location (change D: to E: if appropriate), then check that the environment still exists:
+
+~~~bat
+set "MJROOT=D:\MuJoCoLab"
+dir "%MJROOT%\envs\mujoco-basics\conda-meta\history"
+~~~
+
+The history file should be listed. If it is missing, use conda env list to find the actual environment location. Do not delete or recreate the environment.
+
+3. Once the file is confirmed, run these commands one at a time:
+
+~~~bat
+conda env config vars unset TEMP TMP -p "%MJROOT%\envs\mujoco-basics"
+conda config --prepend envs_dirs "%MJROOT%\envs"
+set "CONDA_ENVS_PATH=%MJROOT%\envs"
+~~~
+
+4. Activate by name, then set temporary locations for this window:
+
+~~~bat
+conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
+~~~
+
+5. Confirm the environment runs:
+
+~~~bat
+python -c "import sys,mujoco; print(sys.executable); print(mujoco.__version__)"
+~~~
+
+Expect the non-C: mujoco-basics Python path and version 3.13.0. If it still fails, keep the full error and report it in Issues.
 
 ### 6.5 Install MuJoCo and NumPy in the active environment
 
@@ -347,6 +394,9 @@ Activate the environment first. For example, install the Pillow image-processing
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 python -m pip install pillow
 ~~~
 
@@ -382,6 +432,9 @@ Activate the environment and enter the tutorial folder in Anaconda Prompt:
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 cd /d "%MJROOT%\tutorial"
 dir run_demo.py
 dir models
@@ -479,10 +532,13 @@ The graphical example attempts real-time pacing. A slow computer may take longer
 
 ## 10. Run again next time
 
-Open Anaconda Prompt and execute these three commands:
+Open Anaconda Prompt and run the following commands in order:
 
 ~~~bat
 conda activate mujoco-basics
+if not exist "%MJROOT%\temp" mkdir "%MJROOT%\temp"
+set "TEMP=%MJROOT%\temp"
+set "TMP=%MJROOT%\temp"
 cd /d "%MJROOT%\tutorial"
 python run_demo.py --model pendulum --seconds 20
 ~~~
@@ -541,6 +597,6 @@ Then explore multi-joint robots, sensors, PD control, Gymnasium interfaces, and 
 - [Conda installation on Windows](https://docs.conda.io/projects/conda/en/stable/user-guide/install/windows.html)
 - [Conda environment and cache settings](https://docs.conda.io/projects/conda/en/stable/user-guide/configuration/settings.html)
 
-This guide installs Miniconda off C:, configures envs_dirs and pkgs_dirs in Anaconda Prompt, and creates a separate named environment. pip cache and temporary settings are saved with that environment. Updated: 2026-11-06.
+This guide installs Miniconda off C:, configures envs_dirs and pkgs_dirs in Anaconda Prompt, and creates a separate named environment. The pip cache is saved with that environment; temporary locations are set separately in each terminal session. Updated: 2026-11-06.
 
 Validation used an existing Windows Conda environment with Python 3.10.20, MuJoCo 3.13.0, and NumPy 2.2.6. Both examples completed 3 seconds of headless simulation and generated CSV files. Named activation and both examples were also tested through cmd.exe using the existing Conda installation. The complete Miniconda installation and creation of a new named environment have not been tested on a clean computer; graphical windows have not been verified. Matching runtime versions does not guarantee identical drivers, Conda tool versions, or every indirect dependency.
