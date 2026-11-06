@@ -359,13 +359,6 @@ set "TEMP=%MJROOT%\temp"
 set "TMP=%MJROOT%\temp"
 ~~~
 
-5. 确认环境可以运行：
-
-~~~bat
-python -c "import sys,mujoco; print(sys.executable); print(mujoco.__version__)"
-~~~
-
-应显示非 C 盘的 mujoco-basics 环境路径和版本 3.13.0。如果仍然失败，请保留完整报错后通过 Issues 反馈。
 
 ### 6.5 在当前环境安装 MuJoCo 和 NumPy
 
