@@ -275,7 +275,9 @@ conda create -n mujoco-basics --override-channels -c https://repo.anaconda.com/p
 | python=3.10.20 | Install this Python version |
 | pip | Include Python's package installer |
 
-When Proceed ([y]/n)? appears, enter y and wait for completion. Anaconda repositories may require you to review and accept their terms on first use. Follow the prompts before continuing. For TosNonInteractiveError, follow the reported repository's terms workflow, then retry.
+**On the first run, if Conda asks whether you accept the Anaconda repository terms, enter `a` (accept) and press Enter if you agree to the terms.**
+
+Later, when Proceed ([y]/n)? asks whether to install the packages, enter `y` and press Enter, then wait for completion. For TosNonInteractiveError, follow the reported repository's terms workflow, then retry.
 
 If the name already exists, inspect conda env list first. Do not confirm overwriting or deleting an environment. An environment created by the previous edition under the configured envs\mujoco-basics directory can be activated by name in the next step.
 
