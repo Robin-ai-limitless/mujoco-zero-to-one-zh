@@ -567,17 +567,7 @@ where python
 python -c "import sys,platform; print(sys.executable); print(platform.platform()); print(platform.machine())"
 ~~~
 
-## 12. 完成标准与下一步
-
-- 环境路径检查全部指向非 C 盘。
-- MuJoCo 图形窗口成功打开，能操作视角。
-- 能看到小球落地，并能修改初始高度。
-- 能看到摆杆运动，并比较两个电机幅值的效果。
-- 关闭终端后，能按第十节重新运行。
-
-完成这些再学习多关节机器人、传感器、PD 控制、Gymnasium 接口和强化学习。不要第一节就加入机器人模型、训练框架与 CUDA，排查问题会困难很多。
-
-## 官方参考与验证说明
+## 12. 官方参考与验证说明
 
 - [MuJoCo Python 官方文档](https://mujoco.readthedocs.io/en/stable/python.html)
 - [MuJoCo XML 参考](https://mujoco.readthedocs.io/en/stable/XMLreference.html)
