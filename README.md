@@ -275,7 +275,9 @@ conda create -n mujoco-basics --override-channels -c https://repo.anaconda.com/p
 | python=3.10.20 | 安装指定版本的 Python |
 | pip | 安装 Python 软件包管理工具 |
 
-看到 Proceed ([y]/n)? 时输入 y 并回车，等待完成。首次使用 Anaconda 软件源可能要求阅读并接受服务条款；请根据提示自行完成后再继续。出现 TosNonInteractiveError 时，按报错提示完成对应软件源的条款流程后重试。
+**首次运行时，如果出现是否接受 Anaconda 软件源条款的询问，同意条款就输入 `a`（accept），按回车继续。**
+
+之后看到 Proceed ([y]/n)?（是否安装软件包）时，输入 `y` 并回车，等待完成。出现 TosNonInteractiveError 时，按报错提示完成对应软件源的条款流程后重试。
 
 如果提示同名环境已存在，先运行 conda env list 检查位置，不要确认覆盖或删除。旧版教程创建的环境如已位于已配置的 envs\mujoco-basics 下，可以直接在下一步按名字激活。
 
